@@ -24,7 +24,7 @@ public class IonTypefaceRequestBuilder implements Builders.Any.TF, TypefaceFutur
 
     IonRequestBuilder builder;
     Ion ion;
-    ContextReference.TextViewContextReference imageViewPostRef;
+    ContextReference.TextViewContextReference textViewPostRef;
 
     public IonTypefaceRequestBuilder(IonRequestBuilder builder) {
         this.builder = builder;
@@ -35,82 +35,62 @@ public class IonTypefaceRequestBuilder implements Builders.Any.TF, TypefaceFutur
         this.ion = ion;
     }
 
-    public IonTypefaceRequestBuilder withTextView(TextView imageView) {
-        imageViewPostRef = new ContextReference.TextViewContextReference(imageView);
+    public IonTypefaceRequestBuilder withTextView(TextView textView) {
+        textViewPostRef = new ContextReference.TextViewContextReference(textView);
         return this;
     }
 
     @SuppressLint("Assert")
     @Override
-    public SimpleFuture<TextView> intoTextView(TextView imageView) {
-        L.d("------------- 1");
+    public SimpleFuture<TextView> intoTextView(TextView textView) {
         assert Thread.currentThread() == Looper.getMainLooper().getThread();
-        L.d("------------- 2");
-        if (imageView == null)
-            throw new NullPointerException("imageView");
+        if (textView == null)
+            throw new NullPointerException("textView");
 
         // no uri? just set a placeholder and bail
         if (builder.uri == null) {
             return FUTURE_TEXTVIEW_NULL_URI;
         }
 
-        L.d("------------- 3");
-        withTextView(imageView);
+        withTextView(textView);
 
-        L.d("------------- 4");
         // executeCache the request, see if we get a bitmap from cache.
         TypefaceFetcher bitmapFetcher = executeCache();
-        L.d("------------- 5");
         if (bitmapFetcher.info != null) {
-            IonTypeface drawable = setIonDrawable(imageView, bitmapFetcher.info, Loader.LoaderEmitter.LOADED_FROM_MEMORY);
+            IonTypeface drawable = setIonTypeface(textView, bitmapFetcher.info, Loader.LoaderEmitter.LOADED_FROM_MEMORY);
             drawable.cancel();
-            SimpleFuture<TextView> imageViewFuture = drawable.getFuture();
-            imageViewFuture.reset();
+            SimpleFuture<TextView> textViewFuture = drawable.getFuture();
+            textViewFuture.reset();
             L.d("---- load from cache.... " + bitmapFetcher.info.typeface);
-            imageView.setTypeface(bitmapFetcher.info.typeface);
-            imageViewFuture.setComplete(bitmapFetcher.info.exception, imageView);
-            return imageViewFuture;
+            textView.setTypeface(bitmapFetcher.info.typeface);
+            textViewFuture.setComplete(bitmapFetcher.info.exception, textView);
+            return textViewFuture;
         }
-        L.d("------------- 6");
-        // TODO TextViewFutureImpl 想办法和 textview 关联起来
-        // TextViewFutureImpl imageViewFuture = new TextViewFutureImpl();
-        // IonDrawable drawable = setIonDrawable(imageView, null, 0);
-        // doAnimation(imageView, loadAnimation, loadAnimationResource);
-        // IonDrawable.ImageViewFutureImpl imageViewFuture =
-        // drawable.getFuture();
-        // imageViewFuture.reset();
-        // drawable.register(ion, bitmapFetcher.bitmapKey);
-        IonTypeface drawable = setIonDrawable(imageView, null, 0);
-        SimpleFuture<TextView> imageViewFuture = drawable.getFuture();
-        imageViewFuture.reset();
-        drawable.register(ion, bitmapFetcher.bitmapKey);
+        IonTypeface typeface = setIonTypeface(textView, null, 0);
+        SimpleFuture<TextView> textViewFuture = typeface.getFuture();
+        textViewFuture.reset();
+        typeface.register(ion, bitmapFetcher.typefaceKey);
         // nothing from cache, check to see if there's too many imageview loads
         // already in progress
-        L.d("------------- 7");
         if (TypefaceFetcher.shouldDeferTextView(ion)) {
             bitmapFetcher.defer();
         } else {
-            L.d("------------- 8");
             bitmapFetcher.execute();
         }
-        L.d("------------- 9");
 
-        return imageViewFuture;
+        return textViewFuture;
     }
 
-    private IonTypeface setIonDrawable(TextView imageView, TypefaceInfo info, int loadedFrom) {
-        IonTypeface ret = IonTypeface.getOrCreateIonDrawable(imageView).ion(ion);
-        imageView.setTag(IonTypeface.TAG, ret);
+    private IonTypeface setIonTypeface(TextView textView, TypefaceInfo info, int loadedFrom) {
+        IonTypeface ret = IonTypeface.getOrCreateIonTypeface(textView).ion(ion);
+        textView.setTag(IonTypeface.TAG, ret);
         return ret;
     }
 
-    public String computeBitmapKey(String downloadKey) {
+    public String computeTypefaceKey(String downloadKey) {
         assert downloadKey != null;
 
-        // determine the key for this bitmap after all transformations
-        String bitmapKey = downloadKey;
-
-        return bitmapKey;
+        return downloadKey;
     }
 
     private String computeDownloadKey() {
@@ -122,21 +102,21 @@ public class IonTypefaceRequestBuilder implements Builders.Any.TF, TypefaceFutur
 
     TypefaceFetcher executeCache() {
         final String downloadKey = computeDownloadKey();
-        String bitmapKey = computeBitmapKey(downloadKey);
+        String typefaceKey = computeTypefaceKey(downloadKey);
 
         // TODO: eliminate this allocation?
         TypefaceFetcher ret = new TypefaceFetcher();
         ret.downloadKey = downloadKey;
-        ret.bitmapKey = bitmapKey;
+        ret.typefaceKey = typefaceKey;
         ret.builder = builder;
         // ret.postProcess = postProcess;
 
         // see if this request can be fulfilled from the cache
         if (!builder.noCache) {
-            TypefaceInfo bitmap = builder.ion.typefaceCache.get(bitmapKey);
-            L.d("get cache..... " + bitmap);
-            if (bitmap != null) {
-                ret.info = bitmap;
+            TypefaceInfo typeface = builder.ion.typefaceCache.get(typefaceKey);
+            L.d("get cache..... " + typeface);
+            if (typeface != null) {
+                ret.info = typeface;
                 return ret;
             }
         }

@@ -35,7 +35,6 @@ public class LoadTypeface extends /* LoadTypefaceEmitter */LoadTypefaceBase impl
             @Override
             public void run() {
                 try {
-                    L.d("------------===aaa");
                     if (ion.typefacesPending.tag(key) != LoadTypeface.this) {
                         return;
                     }
@@ -44,7 +43,6 @@ public class LoadTypeface extends /* LoadTypefaceEmitter */LoadTypefaceBase impl
                     info.loadedFrom = Loader.LoaderEmitter.LOADED_FROM_NETWORK;
                     report(null, info);
                 } catch (Exception e) {
-                    L.d("----------------");
                     report(e, null);
                 } finally {
                 }

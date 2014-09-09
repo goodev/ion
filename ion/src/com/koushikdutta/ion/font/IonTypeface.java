@@ -20,7 +20,7 @@ public class IonTypeface {
     private TypefaceInfo info;
     @SuppressWarnings("unused")
     private int loadedFrom;
-    private IonDrawableCallback callback;
+    private IonTypefaceCallback callback;
     private Ion ion;
 
     public IonTypeface ion(Ion ion) {
@@ -33,22 +33,22 @@ public class IonTypeface {
     }
 
     public SimpleFuture<TextView> getFuture() {
-        return callback.imageViewFuture;
+        return callback.textViewFuture;
     }
 
     public static final int TAG = R.id.font_key;
 
     // create an internal static class that can act as a callback.
     // dont let it hold strong references to anything.
-    static class IonDrawableCallback implements FutureCallback<TypefaceInfo> {
-        private WeakReference<IonTypeface> ionDrawableRef;
-        private ContextReference.TextViewContextReference imageViewRef;
-        private String bitmapKey;
-        private SimpleFuture<TextView> imageViewFuture = new SimpleFuture<TextView>();
+    static class IonTypefaceCallback implements FutureCallback<TypefaceInfo> {
+        private WeakReference<IonTypeface> ionTypefaceRef;
+        private ContextReference.TextViewContextReference textViewRef;
+        private String typefaceKey;
+        private SimpleFuture<TextView> textViewFuture = new SimpleFuture<TextView>();
 
-        public IonDrawableCallback(IonTypeface drawable, TextView imageView) {
-            ionDrawableRef = new WeakReference<IonTypeface>(drawable);
-            imageViewRef = new ContextReference.TextViewContextReference(imageView);
+        public IonTypefaceCallback(IonTypeface typeface, TextView textView) {
+            ionTypefaceRef = new WeakReference<IonTypeface>(typeface);
+            textViewRef = new ContextReference.TextViewContextReference(textView);
         }
 
         @SuppressLint("Assert")
@@ -56,48 +56,44 @@ public class IonTypeface {
         public void onCompleted(Exception e, TypefaceInfo result) {
             assert Thread.currentThread() == Looper.getMainLooper().getThread();
             assert result != null;
-            // see if the imageview is still alive and cares about this result
-            TextView imageView = imageViewRef.get();
-            L.d("textView..."+imageView);
-            if (imageView == null)
+            // see if the textView is still alive and cares about this result
+            TextView textView = textViewRef.get();
+            if (textView == null)
                 return;
 
-            IonTypeface drawable = ionDrawableRef.get();
-            L.d("IonTypeface..."+drawable);
-            if (drawable == null)
+            IonTypeface typeface = ionTypefaceRef.get();
+            if (typeface == null)
                 return;
 
-            L.d("IonTypeface tag..."+imageView.getTag(TAG));
-            if (imageView.getTag(TAG) != drawable)
+            if (textView.getTag(TAG) != typeface)
                 return;
 
-            imageView.setTag(TAG, null);
-            drawable.setBitmap(result, result.loadedFrom);
-            imageView.setTag(TAG, drawable);
-            imageView.setTypeface(result.typeface);
+            textView.setTag(TAG, null);
+            typeface.setBitmap(result, result.loadedFrom);
+            textView.setTag(TAG, typeface);
+            textView.setTypeface(result.typeface);
 
-            L.d("textView alive ..."+imageViewRef.isAlive());
-            if (null != imageViewRef.isAlive()) {
-                imageViewFuture.cancelSilently();
+            L.d("textView alive ..."+textViewRef.isAlive());
+            if (null != textViewRef.isAlive()) {
+                textViewFuture.cancelSilently();
                 return;
             }
 
-            imageViewFuture.setComplete(e, imageView);
+            textViewFuture.setComplete(e, textView);
         }
     }
 
     public void cancel() {
-        unregister(ion, callback.bitmapKey, callback);
-        callback.bitmapKey = null;
+        unregister(ion, callback.typefaceKey, callback);
+        callback.typefaceKey = null;
     }
 
-    private static void unregister(Ion ion, String key, IonDrawableCallback callback) {
+    private static void unregister(Ion ion, String key, IonTypefaceCallback callback) {
         if (key == null)
             return;
-        // unregister this drawable from the bitmaps that are
-        // pending.
+        // unregister this typeface from the typefaces that are pending.
 
-        // if this drawable was the only thing waiting for this bitmap,
+        // if this typeface was the only thing waiting for this bitmap,
         // then the removeItem call will return the TransformBitmap/LoadBitmap
         // instance
         // that was providing the result.
@@ -119,17 +115,17 @@ public class IonTypeface {
         ion.processTypefaceDeferred();
     }
 
-    public void register(Ion ion, String bitmapKey) {
-        String previousKey = callback.bitmapKey;
-        if (TextUtils.equals(previousKey, bitmapKey))
+    public void register(Ion ion, String typefaceKey) {
+        String previousKey = callback.typefaceKey;
+        if (TextUtils.equals(previousKey, typefaceKey))
             return;
-        callback.bitmapKey = bitmapKey;
-        ion.typefacesPending.add(bitmapKey, callback);
+        callback.typefaceKey = typefaceKey;
+        ion.typefacesPending.add(typefaceKey, callback);
         unregister(ion, previousKey, callback);
     }
 
-    public IonTypeface(TextView imageView) {
-        callback = new IonDrawableCallback(this, imageView);
+    public IonTypeface(TextView textView) {
+        callback = new IonTypefaceCallback(this, textView);
     }
 
     public IonTypeface setBitmap(TypefaceInfo info, int loadedFrom) {
@@ -140,25 +136,24 @@ public class IonTypeface {
         this.loadedFrom = loadedFrom;
         this.info = info;
         if (info == null) {
-            callback.bitmapKey = null;
+            callback.typefaceKey = null;
             return this;
         }
 
-        callback.bitmapKey = info.key;
+        callback.typefaceKey = info.key;
         return this;
     }
 
-    static IonTypeface getOrCreateIonDrawable(TextView imageView) {
-        IonTypeface current = (IonTypeface) imageView.getTag(TAG);
+    static IonTypeface getOrCreateIonTypeface(TextView textView) {
+        IonTypeface current = (IonTypeface) textView.getTag(TAG);
         IonTypeface ret;
+        
         if (current == null)
-            ret = new IonTypeface(imageView);
+            ret = new IonTypeface(textView);
         else
             ret = (IonTypeface) current;
-        // invalidate self doesn't seem to trigger the dimension check to be
-        // called by imageview.
-        // are drawable dimensions supposed to be immutable?
-        imageView.setTag(TAG, null);
+        
+        textView.setTag(TAG, null);
         return ret;
     }
 }

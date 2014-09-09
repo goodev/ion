@@ -27,7 +27,7 @@ import java.util.zip.ZipInputStream;
 
 public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
     String downloadKey;
-    public String bitmapKey;
+    public String typefaceKey;
     TypefaceInfo info;
     IonRequestBuilder builder;
 
@@ -98,13 +98,11 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
                 try {
                     L.d("cache file -- " + file);
                     try {
-                        L.d("------------==1111=");
                         Typeface typeface = Typeface.createFromFile(file);
                         TypefaceInfo info = new TypefaceInfo(transformKey, typeface, (int) new File(file).length());
                         info.loadedFrom = Loader.LoaderEmitter.LOADED_FROM_CACHE;
                         callback.report(null, info);
                     } catch (Exception e) {
-                        L.d("e ----------------");
                         callback.report(e, null);
                     } finally {
                     }
@@ -192,7 +190,7 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
         final File ttf = new File(file.getAbsolutePath().replace(".zip", ".ttf"));
         if (!builder.noCache && (/*file.exists() ||*/ ttf.exists())) {
             L.d("get font from file " + ttf.getAbsolutePath());
-            getTypefaceFromFile(ion, bitmapKey, ttf.getAbsolutePath());
+            getTypefaceFromFile(ion, typefaceKey, ttf.getAbsolutePath());
             return;
         }
 
@@ -202,8 +200,8 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
         // See TransformBitmap for where the cache is populated.
         FileCache fileCache = ion.getCache();
         L.d("cache..............||| " + fileCache);
-        if (!builder.noCache && fileCache.exists(bitmapKey)) {
-            getTypefaceFromHttpCache(ion, bitmapKey, ttf);
+        if (!builder.noCache && fileCache.exists(typefaceKey)) {
+            getTypefaceFromHttpCache(ion, typefaceKey, ttf);
             return;
         }
 

@@ -4,13 +4,9 @@ package com.koushikdutta.ion.font;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Looper;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.WindowManager;
 
 import com.koushikdutta.ion.Ion;
 
@@ -19,8 +15,6 @@ import java.io.File;
 public class IonTypefaceCache {
     public static final long DEFAULT_ERROR_CACHE_DURATION = 30000L;
 
-    Resources resources;
-    DisplayMetrics metrics;
     LruTypefaceCache cache;
     Ion ion;
     long errorCacheDuration = DEFAULT_ERROR_CACHE_DURATION;
@@ -36,11 +30,7 @@ public class IonTypefaceCache {
     public IonTypefaceCache(Ion ion) {
         Context context = ion.getContext();
         this.ion = ion;
-        metrics = new DisplayMetrics();
-        ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
-        final AssetManager mgr = context.getAssets();
-        resources = new Resources(mgr, metrics, context.getResources().getConfiguration());
-        cache = new LruTypefaceCache(getHeapSize(context) / 7);
+        cache = new LruTypefaceCache(getHeapSize(context) / 10);
     }
 
     public TypefaceInfo remove(String key) {

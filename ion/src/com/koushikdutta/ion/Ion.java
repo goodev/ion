@@ -360,7 +360,7 @@ public class Ion {
             int count = 0;
             for (DeferredLoadTypeface deferredLoadBitmap: deferred) {
                 typefacesPending.tag(deferredLoadBitmap.key, null);
-                typefacesPending.tag(deferredLoadBitmap.fetcher.bitmapKey, null);
+                typefacesPending.tag(deferredLoadBitmap.fetcher.typefaceKey, null);
                 L.d("processTypefaceDeferred ... .... 4 execute");
                 deferredLoadBitmap.fetcher.execute();
                 count++;
