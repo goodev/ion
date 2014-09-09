@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.koushikdutta.async.parser.AsyncParser;
+import com.koushikdutta.ion.font.TypefaceFutureBuilder;
 import com.koushikdutta.ion.future.ResponseFuture;
 
 import org.w3c.dom.Document;
@@ -15,7 +16,7 @@ import java.io.OutputStream;
 /**
 * Created by koush on 5/30/13.
 */ // get the result, transformed to how you want it
-public interface FutureBuilder extends BitmapFutureBuilder, ImageViewFutureBuilder, GsonFutureBuilder {
+public interface FutureBuilder extends BitmapFutureBuilder, ImageViewFutureBuilder, GsonFutureBuilder, TypefaceFutureBuilder {
     /**
      * Execute the request and get the result as a String
      * @return
@@ -41,6 +42,7 @@ public interface FutureBuilder extends BitmapFutureBuilder, ImageViewFutureBuild
      * @return
      */
     public Builders.Any.BF<? extends Builders.Any.BF<?>> withBitmap();
+    public Builders.Any.TF<? extends Builders.Any.TF<?>> withTypeface();
 
     /**
      * Execute the request and write it to the given OutputStream.

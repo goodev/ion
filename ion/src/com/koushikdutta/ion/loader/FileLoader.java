@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.text.TextUtils;
 
 import com.koushikdutta.async.DataEmitter;
@@ -17,6 +18,7 @@ import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Loader;
 import com.koushikdutta.ion.bitmap.BitmapInfo;
 import com.koushikdutta.ion.bitmap.IonBitmapCache;
+import com.koushikdutta.ion.font.TypefaceInfo;
 import com.koushikdutta.ion.gif.GifAction;
 import com.koushikdutta.ion.gif.GifDecoder;
 
@@ -33,8 +35,41 @@ public class FileLoader extends StreamLoader {
     }
 
     @Override
-    public Future<BitmapInfo> loadBitmap(final Context context, final Ion ion, final String key, final String uri, final int resizeWidth, final int resizeHeight,
-                                         final boolean animateGif) {
+    public Future<TypefaceInfo> loadTypeface(final Context context, final Ion ion, final String key, final String uri) {
+        if (uri == null || !uri.startsWith("file:/"))
+            return null;
+
+        final SimpleFuture<TypefaceInfo> ret = new SimpleFuture<TypefaceInfo>();
+
+        Ion.getBitmapLoadExecutorService().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (ret.isCancelled()) {
+                    // Log.d("FileLoader", "Bitmap load cancelled (no longer needed)");
+                    return;
+                }
+                try {
+                    File file = new File(URI.create(uri));
+                    TypefaceInfo info;
+                    Typeface bitmap = Typeface.createFromFile(file);
+                    if (bitmap == null)
+                        throw new Exception("Bitmap failed to load");
+                    info = new TypefaceInfo(key, bitmap, (int) file.length());
+                    info.loadedFrom = Loader.LoaderEmitter.LOADED_FROM_CACHE;
+                    ret.setComplete(info);
+                } catch (OutOfMemoryError e) {
+                    ret.setComplete(new Exception(e), null);
+                } catch (Exception e) {
+                    ret.setComplete(e);
+                }
+            }
+        });
+
+        return ret;
+    }
+
+    @Override
+    public Future<BitmapInfo> loadBitmap(final Context context, final Ion ion, final String key, final String uri, final int resizeWidth, final int resizeHeight, final boolean animateGif) {
         if (uri == null || !uri.startsWith("file:/"))
             return null;
 

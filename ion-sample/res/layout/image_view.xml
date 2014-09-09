@@ -4,7 +4,38 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-
+    <com.koushikdutta.ion.sample.FontTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefghijklmnopqrstuvwxyz"
+            android:id="@+id/image1"
+            />
+    <com.koushikdutta.ion.sample.FontTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefghijklmnopqrstuvwxyz"
+            android:id="@+id/image2"
+            />
+    <com.koushikdutta.ion.sample.FontTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefghijklmnopqrstuvwxyz"
+            android:id="@+id/image3"
+            />
+    <com.koushikdutta.ion.sample.FontTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefghijklmnopqrstuvwxyz"
+            android:id="@+id/image4"
+            />
+    <com.koushikdutta.ion.sample.FontTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefghijklmnopqrstuvwxyz"
+            android:id="@+id/image5"
+            />
+    <!-- 
+     -->
     <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -13,8 +44,9 @@
 
     <ImageView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:id="@+id/image"
             />
+
 
 </LinearLayout>

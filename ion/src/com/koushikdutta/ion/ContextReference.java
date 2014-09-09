@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.os.Build;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * Created by koush on 4/15/14.
  */
-abstract class ContextReference<T> extends WeakReference<T> {
+public abstract class ContextReference<T> extends WeakReference<T> {
     ContextReference(T t) {
         super(t);
     }
@@ -139,6 +140,27 @@ abstract class ContextReference<T> extends WeakReference<T> {
         }
     }
 
+    public static class TextViewContextReference extends ContextReference<TextView> {
+        public TextViewContextReference(TextView textView) {
+            super(textView);
+        }
+        
+        @Override
+        public String isAlive() {
+            TextView iv = get();
+            if (iv == null)
+                return "TextView reference null";
+            return NormalContextReference.isAlive(iv.getContext());
+        }
+        
+        @Override
+        public Context getContext() {
+            TextView iv = get();
+            if (iv == null)
+                return null;
+            return iv.getContext();
+        }
+    }
     static class ImageViewContextReference extends ContextReference<ImageView> {
         public ImageViewContextReference(ImageView imageView) {
             super(imageView);

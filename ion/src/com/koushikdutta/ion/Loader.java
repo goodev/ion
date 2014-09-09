@@ -8,6 +8,7 @@ import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.async.http.AsyncHttpRequest;
 import com.koushikdutta.async.http.libcore.RawHeaders;
 import com.koushikdutta.ion.bitmap.BitmapInfo;
+import com.koushikdutta.ion.font.TypefaceInfo;
 
 import java.io.InputStream;
 
@@ -81,6 +82,7 @@ public interface Loader {
      * @return
      */
     public Future<BitmapInfo> loadBitmap(Context context, Ion ion, String key, String uri, int resizeWidth, int resizeHeight, boolean animateGif);
+    public Future<TypefaceInfo> loadTypeface(Context context, Ion ion, String key, String uri);
 
     /**
      * Resolve a request into another request.

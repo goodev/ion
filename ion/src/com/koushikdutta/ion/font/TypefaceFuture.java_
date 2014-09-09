@@ -1,0 +1,11 @@
+
+package com.koushikdutta.ion.font;
+
+import android.widget.TextView;
+
+import com.koushikdutta.async.future.Future;
+import com.koushikdutta.ion.ImageViewBitmapInfo;
+
+public interface TypefaceFuture extends Future<TextView> {
+    Future<TextViewTypefaceInfo> withTypefaceInfo();
+}

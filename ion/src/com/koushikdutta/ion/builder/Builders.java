@@ -3,6 +3,7 @@ package com.koushikdutta.ion.builder;
 import android.graphics.Bitmap;
 
 import com.koushikdutta.ion.bitmap.BitmapInfo;
+import com.koushikdutta.ion.font.TypefaceFutureBuilder;
 
 /**
  * Created by koush on 6/10/13.
@@ -24,9 +25,11 @@ public interface Builders {
         // restrict to bitmap future builder
         public interface BF<A extends BF<?>> extends BitmapBuilder<A>, BitmapFutureBuilder, IF<A> {
         }
+        public interface TF<A extends TF<?>> extends TypefaceFutureBuilder {
+        }
 
         // restrict to future builder
-        public interface F extends FutureBuilder, ImageViewFutureBuilder {
+        public interface F extends FutureBuilder, ImageViewFutureBuilder, TypefaceFutureBuilder {
         }
 
         // restrict to multipart builder

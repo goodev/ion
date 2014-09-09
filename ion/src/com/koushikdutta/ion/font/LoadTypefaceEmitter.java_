@@ -1,0 +1,14 @@
+
+package com.koushikdutta.ion.font;
+
+import com.koushikdutta.ion.Ion;
+import com.koushikdutta.ion.IonRequestBuilder;
+
+public class LoadTypefaceEmitter extends LoadTypefaceBase {
+    IonRequestBuilder.EmitterTransform emitterTransform;
+
+    public LoadTypefaceEmitter(Ion ion, String urlKey, boolean put, IonRequestBuilder.EmitterTransform emitterTransform) {
+        super(ion, urlKey, put);
+        this.emitterTransform = emitterTransform;
+    }
+}

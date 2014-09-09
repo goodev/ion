@@ -10,6 +10,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -54,7 +55,8 @@ import com.koushikdutta.ion.bitmap.LocallyCachedStatus;
 import com.koushikdutta.ion.builder.Builders;
 import com.koushikdutta.ion.builder.FutureBuilder;
 import com.koushikdutta.ion.builder.LoadBuilder;
-import com.koushikdutta.ion.future.ImageViewFuture;
+import com.koushikdutta.ion.font.IonTypefaceRequestBuilder;
+import com.koushikdutta.ion.font.TypefaceFutureBuilder;
 import com.koushikdutta.ion.future.ResponseFuture;
 import com.koushikdutta.ion.gson.GsonArrayParser;
 import com.koushikdutta.ion.gson.GsonBody;
@@ -77,12 +79,12 @@ import java.util.Map;
 /**
  * Created by koush on 5/21/13.
  */
-class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.M, Builders.Any.U, LoadBuilder<Builders.Any.B> {
-    Ion ion;
-    ContextReference contextReference;
+public class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.M, Builders.Any.U, LoadBuilder<Builders.Any.B> {
+    public Ion ion;
+    public ContextReference contextReference;
     Handler handler = Ion.mainHandler;
     String method = AsyncHttpGet.METHOD;
-    String uri;
+    public String uri;
 
     public IonRequestBuilder(ContextReference contextReference, Ion ion) {
         String alive = contextReference.isAlive();
@@ -153,7 +155,7 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
         return this;
     }
 
-    boolean noCache;
+    public boolean noCache;
     @Override
     public Builders.Any.B noCache() {
         noCache = true;
@@ -287,11 +289,11 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
         return request;
     }
 
-    static interface LoadRequestCallback {
+    public static interface LoadRequestCallback {
         boolean loadRequest(AsyncHttpRequest request);
     }
 
-    LoadRequestCallback loadRequestCallback;
+    public LoadRequestCallback loadRequestCallback;
 
     private <T> void getLoaderEmitter(final EmitterTransform<T> ret) {
         Uri uri = prepareURI();
@@ -396,7 +398,7 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
 
     // transforms a LoaderEmitter, which is a DataEmitter and all associated properties about the data source
     // into the final result.
-    class EmitterTransform<T> extends TransformFuture<T, LoaderEmitter> implements ResponseFuture<T> {
+   public class EmitterTransform<T> extends TransformFuture<T, LoaderEmitter> implements ResponseFuture<T> {
         AsyncHttpRequest initialRequest;
         AsyncHttpRequest finalRequest;
         int loadedFrom;
@@ -576,7 +578,7 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
     }
 
 
-    <T> EmitterTransform<T> execute(final DataSink sink, final boolean close, final T result, final Runnable cancel) {
+    public <T> EmitterTransform<T> execute(final DataSink sink, final boolean close, final T result, final Runnable cancel) {
         EmitterTransform<T> ret = new EmitterTransform<T>(cancel) {
             @Override
             protected void cleanup() {
@@ -589,6 +591,7 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
             @Override
             protected void transform(LoaderEmitter emitter) throws Exception {
                 super.transform(emitter);
+                L.d("transform .....");
                 Util.pump(this.emitter, sink, new CompletedCallback() {
                     @Override
                     public void onCompleted(Exception ex) {
@@ -605,7 +608,7 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
         return execute(parser, null);
     }
 
-    <T> EmitterTransform<T> execute(final AsyncParser<T> parser, Runnable cancel) {
+    public <T> EmitterTransform<T> execute(final AsyncParser<T> parser, Runnable cancel) {
         assert parser != null;
         EmitterTransform<T> ret = new EmitterTransform<T>(cancel) {
             EmitterTransform<T> self = this;
@@ -815,7 +818,7 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
     }
 
     @Override
-    public ImageViewFuture intoImageView(ImageView imageView) {
+    public SimpleFuture<ImageView> intoImageView(ImageView imageView) {
         return new IonImageViewRequestBuilder(this).withImageView(imageView).intoImageView(imageView);
     }
 
@@ -972,5 +975,15 @@ class IonRequestBuilder implements Builders.Any.B, Builders.Any.F, Builders.Any.
             headers.set(h.getName(), h.getValue());
         }
         return this;
+    }
+    
+    public IonTypefaceRequestBuilder withTypeface() {
+        return new IonTypefaceRequestBuilder(this);
+    }
+
+
+    @Override
+    public SimpleFuture<TextView> intoTextView(TextView textView) {
+        return new IonTypefaceRequestBuilder(this).withTextView(textView).intoTextView(textView);
     }
 }

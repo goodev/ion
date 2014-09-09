@@ -9,6 +9,7 @@ import com.koushikdutta.async.http.AsyncHttpRequest;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Loader;
 import com.koushikdutta.ion.bitmap.BitmapInfo;
+import com.koushikdutta.ion.font.TypefaceInfo;
 
 import java.io.InputStream;
 
@@ -33,6 +34,11 @@ public class SimpleLoader implements Loader {
 
     @Override
     public Future<AsyncHttpRequest> resolve(Context context, Ion ion, AsyncHttpRequest request) {
+        return null;
+    }
+
+    @Override
+    public Future<TypefaceInfo> loadTypeface(Context context, Ion ion, String key, String uri) {
         return null;
     }
 }

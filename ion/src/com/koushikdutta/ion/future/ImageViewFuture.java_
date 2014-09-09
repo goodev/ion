@@ -7,6 +7,7 @@ import com.koushikdutta.ion.ImageViewBitmapInfo;
 
 /**
  * Created by koush on 7/1/14.
+  TODO  这个好像没啥用
  */
 public interface ImageViewFuture extends Future<ImageView> {
     Future<ImageViewBitmapInfo> withBitmapInfo();

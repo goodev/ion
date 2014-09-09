@@ -1,0 +1,26 @@
+
+package com.koushikdutta.ion.font;
+
+import android.widget.TextView;
+
+public class TextViewTypefaceInfo {
+
+    Exception exception;
+
+    public Exception getException() {
+        return exception;
+    }
+
+    TextView textView;
+
+    public TextView getTextView() {
+        return textView;
+    }
+
+    TypefaceInfo info;
+
+    public TypefaceInfo getTypefaceInfo() {
+        return info;
+    }
+
+}

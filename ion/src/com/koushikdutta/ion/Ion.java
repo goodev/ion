@@ -29,6 +29,10 @@ import com.koushikdutta.ion.builder.FutureBuilder;
 import com.koushikdutta.ion.builder.LoadBuilder;
 import com.koushikdutta.ion.conscrypt.ConscryptMiddleware;
 import com.koushikdutta.ion.cookie.CookieMiddleware;
+import com.koushikdutta.ion.font.DeferredLoadTypeface;
+import com.koushikdutta.ion.font.IonTypefaceCache;
+import com.koushikdutta.ion.font.TypefaceFetcher;
+import com.koushikdutta.ion.font.TypefaceInfo;
 import com.koushikdutta.ion.loader.AssetLoader;
 import com.koushikdutta.ion.loader.AsyncHttpRequestFactory;
 import com.koushikdutta.ion.loader.ContentLoader;
@@ -53,7 +57,7 @@ import java.util.concurrent.Executors;
  * Created by koush on 5/21/13.
  */
 public class Ion {
-    static final Handler mainHandler = new Handler(Looper.getMainLooper());
+    public static final Handler mainHandler = new Handler(Looper.getMainLooper());
     static int availableProcessors = Runtime.getRuntime().availableProcessors();
     static ExecutorService ioExecutorService = Executors.newFixedThreadPool(4);
     static ExecutorService bitmapExecutorService  = availableProcessors > 2 ? Executors.newFixedThreadPool(availableProcessors - 1) : Executors.newFixedThreadPool(1);
@@ -163,8 +167,10 @@ public class Ion {
     ArrayList<Loader> loaders = new ArrayList<Loader>();
     String name;
     HashList<FutureCallback<BitmapInfo>> bitmapsPending = new HashList<FutureCallback<BitmapInfo>>();
+    public HashList<FutureCallback<TypefaceInfo>> typefacesPending = new HashList<FutureCallback<TypefaceInfo>>();
     Config config = new Config();
     IonBitmapCache bitmapCache;
+    public IonTypefaceCache typefaceCache;
     Context context;
     IonImageViewRequestBuilder bitmapBuilder = new IonImageViewRequestBuilder(this);
 
@@ -201,6 +207,7 @@ public class Ion {
         httpClient.getSSLSocketMiddleware().setConnectAllAddresses(true);
 
         bitmapCache = new IonBitmapCache(this);
+        typefaceCache = new IonTypefaceCache(this);
 
         configure()
                 .addLoader(videoLoader = new VideoLoader())
@@ -325,6 +332,45 @@ public class Ion {
         }
     };
 
+    private Runnable processTypefaceDeferred = new Runnable() {
+        @Override
+        public void run() {
+            L.d("processTypefaceDeferred ...");
+            if (TypefaceFetcher.shouldDeferTextView(Ion.this))
+                return;
+            L.d("processTypefaceDeferred ... .... 1 ");
+            ArrayList<DeferredLoadTypeface> deferred = null;
+            for (String key: typefacesPending.keySet()) {
+                Object owner = typefacesPending.tag(key);
+                L.d("processTypefaceDeferred ... .... 2 "+owner);
+                if (owner instanceof DeferredLoadTypeface) {
+                    DeferredLoadTypeface deferredLoadBitmap = (DeferredLoadTypeface)owner;
+                    if (deferred == null)
+                        deferred = new ArrayList<DeferredLoadTypeface>();
+                    deferred.add(deferredLoadBitmap);
+                }
+            }
+
+            L.d("processTypefaceDeferred ... .... 3 "+deferred);
+            if (deferred == null)
+                return;
+            int count = 0;
+            for (DeferredLoadTypeface deferredLoadBitmap: deferred) {
+                typefacesPending.tag(deferredLoadBitmap.key, null);
+                typefacesPending.tag(deferredLoadBitmap.fetcher.bitmapKey, null);
+                L.d("processTypefaceDeferred ... .... 4 execute");
+                deferredLoadBitmap.fetcher.execute();
+                count++;
+                // do MAX_IMAGEVIEW_LOAD max. this may end up going over the MAX_IMAGEVIEW_LOAD threshhold
+                if (count > TypefaceFetcher.MAX_TYPEFACE_LOAD)
+                    return;
+            }
+        }
+    };
+    public void processTypefaceDeferred() {
+        mainHandler.removeCallbacks(processTypefaceDeferred);
+        mainHandler.post(processTypefaceDeferred);
+    }
     void processDeferred() {
         mainHandler.removeCallbacks(processDeferred);
         mainHandler.post(processDeferred);

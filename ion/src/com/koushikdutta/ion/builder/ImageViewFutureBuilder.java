@@ -3,7 +3,7 @@ package com.koushikdutta.ion.builder;
 import android.widget.ImageView;
 
 import com.koushikdutta.async.future.Future;
-import com.koushikdutta.ion.future.ImageViewFuture;
+import com.koushikdutta.async.future.SimpleFuture;
 
 /**
 * Created by koush on 5/30/13.
@@ -15,5 +15,5 @@ public interface ImageViewFutureBuilder {
      * @param imageView ImageView to set once the request completes
      * @return
      */
-    public ImageViewFuture intoImageView(ImageView imageView);
+    public SimpleFuture<ImageView> intoImageView(ImageView imageView);
 }

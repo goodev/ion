@@ -9,16 +9,16 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 
 import com.koushikdutta.async.future.Future;
+import com.koushikdutta.async.future.SimpleFuture;
 import com.koushikdutta.ion.bitmap.BitmapInfo;
 import com.koushikdutta.ion.builder.Builders;
 import com.koushikdutta.ion.builder.ImageViewFutureBuilder;
-import com.koushikdutta.ion.future.ImageViewFuture;
 
 /**
  * Created by koush on 7/4/14.
  */
 public class IonImageViewRequestBuilder extends IonBitmapRequestBuilder implements Builders.IV.F, ImageViewFutureBuilder {
-    private static final IonDrawable.ImageViewFutureImpl FUTURE_IMAGEVIEW_NULL_URI = new IonDrawable.ImageViewFutureImpl() {
+    private static final SimpleFuture<ImageView> FUTURE_IMAGEVIEW_NULL_URI = new SimpleFuture<ImageView>() {
         {
             setComplete(new NullPointerException("uri"));
         }
@@ -64,7 +64,7 @@ public class IonImageViewRequestBuilder extends IonBitmapRequestBuilder implemen
     }
 
     @Override
-    public ImageViewFuture load(String uri) {
+    public SimpleFuture<ImageView> load(String uri) {
         ensureBuilder();
         builder.load(uri);
         return intoImageView(imageViewPostRef.get());
@@ -96,7 +96,7 @@ public class IonImageViewRequestBuilder extends IonBitmapRequestBuilder implemen
     }
 
     @Override
-    public ImageViewFuture intoImageView(ImageView imageView) {
+    public SimpleFuture<ImageView> intoImageView(ImageView imageView) {
         assert Thread.currentThread() == Looper.getMainLooper().getThread();
         if (imageView == null)
             throw new NullPointerException("imageView");
@@ -115,7 +115,7 @@ public class IonImageViewRequestBuilder extends IonBitmapRequestBuilder implemen
             doAnimation(imageView, null, 0);
             IonDrawable drawable = setIonDrawable(imageView, bitmapFetcher.info, Loader.LoaderEmitter.LOADED_FROM_MEMORY);
             drawable.cancel();
-            IonDrawable.ImageViewFutureImpl imageViewFuture = drawable.getFuture();
+            SimpleFuture<ImageView> imageViewFuture = drawable.getFuture();
             imageViewFuture.reset();
             imageViewFuture.setComplete(bitmapFetcher.info.exception, imageView);
             return imageViewFuture;
@@ -123,7 +123,7 @@ public class IonImageViewRequestBuilder extends IonBitmapRequestBuilder implemen
 
         IonDrawable drawable = setIonDrawable(imageView, null, 0);
         doAnimation(imageView, loadAnimation, loadAnimationResource);
-        IonDrawable.ImageViewFutureImpl imageViewFuture = drawable.getFuture();
+        SimpleFuture<ImageView> imageViewFuture = drawable.getFuture();
         imageViewFuture.reset();
         drawable.register(ion, bitmapFetcher.bitmapKey);
 
