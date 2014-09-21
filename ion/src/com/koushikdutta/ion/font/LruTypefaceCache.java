@@ -2,7 +2,6 @@
 package com.koushikdutta.ion.font;
 
 import com.koushikdutta.async.util.LruCache;
-import com.koushikdutta.ion.L;
 import com.koushikdutta.ion.bitmap.SoftReferenceHashtable;
 
 public class LruTypefaceCache extends LruCache<String, TypefaceInfo> {
@@ -19,7 +18,6 @@ public class LruTypefaceCache extends LruCache<String, TypefaceInfo> {
 
     public TypefaceInfo getTypefaceInfo(String key) {
         TypefaceInfo ret = get(key);
-        L.d("... "+ key+" ... "+ ret);
         if (ret != null)
             return ret;
 

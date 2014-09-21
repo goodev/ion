@@ -32,6 +32,7 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
     IonRequestBuilder builder;
 
     private boolean fastLoad(String uri) {
+        if(true) return false;
         Ion ion = builder.ion;
 
         for (Loader loader : ion.configure().getLoaders()) {
@@ -53,7 +54,7 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
         return false;
     }
 
-    public static final int MAX_TYPEFACE_LOAD = 2;
+    public static final int MAX_TYPEFACE_LOAD = 6;
 
     public static boolean shouldDeferTextView(Ion ion) {
         int size = ion.typefacesPending.keySet().size();
@@ -186,10 +187,11 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
     public void execute() {
         final Ion ion = builder.ion;
 
-        final File file = getFileFromUri(builder.uri);
-        final File ttf = new File(file.getAbsolutePath().replace(".zip", ".ttf"));
+        final File ttf = getTtfFileFromUri(builder.uri);
+        if(ttf == null) {
+            return;
+        }
         if (!builder.noCache && (/*file.exists() ||*/ ttf.exists())) {
-            L.d("get font from file " + ttf.getAbsolutePath());
             getTypefaceFromFile(ion, typefaceKey, ttf.getAbsolutePath());
             return;
         }
@@ -198,20 +200,19 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
         // subsequent retransformation. See if we can retrieve the bitmap from
         // the disk cache.
         // See TransformBitmap for where the cache is populated.
-        FileCache fileCache = ion.getCache();
-        L.d("cache..............||| " + fileCache);
-        if (!builder.noCache && fileCache.exists(typefaceKey)) {
-            getTypefaceFromHttpCache(ion, typefaceKey, ttf);
-            return;
-        }
+//        FileCache fileCache = ion.getCache();
+//        L.d("cache..............||| " + fileCache);
+//        if (!builder.noCache && fileCache.exists(typefaceKey)) {
+//            getTypefaceFromHttpCache(ion, typefaceKey, ttf);
+//            return;
+//        }
 
-        L.d("cache..............11" + fileCache);
+//        L.d("cache..............11" + fileCache);
         // Perform a download as necessary.
         if (ion.typefacesPending.tag(downloadKey) == null && !fastLoad(builder.uri)) {
             builder.setHandler(null);
             builder.loadRequestCallback = this;
 
-            L.d("http excute...." + file.getAbsolutePath());
             L.d("http excute uri --- ...." +builder.uri);
 
             SimpleFuture<File> ff = builder.execute(new InputStreamParser(), new Runnable() {
@@ -228,6 +229,7 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
 
                 @Override
                 protected void transform(InputStream result) throws Exception {
+                    //TODO 这个是不是也在UI线程执行的？？？
                     try {
                         L.d("------------===");
                         ZipInputStream zis = new ZipInputStream(result);
@@ -272,13 +274,33 @@ public class TypefaceFetcher implements IonRequestBuilder.LoadRequestCallback {
     }
 
     private File getFileFromUri(String uri) {
-        int index = uri.lastIndexOf("/");
-        String name = uri.substring(index, uri.length());
-        File dir = builder.contextReference.getContext().getFilesDir();
-        dir = new File(dir, "prettf");
-        if(!dir.exists()) {
-            dir.mkdirs();
+        try {
+            int index = uri.lastIndexOf("/");
+            String name = uri.substring(index, uri.length());
+            File dir = builder.contextReference.getContext().getFilesDir();
+            dir = new File(dir, "prettf");
+            if(!dir.exists()) {
+                dir.mkdirs();
+            }
+            return new File(dir, name);
+        } catch (Exception e) {
+            //builder.contextReference 可能为null
+            return null;
         }
-        return new File(dir, name);
+    }
+    private File getTtfFileFromUri(String uri) {
+        try {
+            int index = uri.lastIndexOf("/");
+            String name = uri.substring(index, uri.length()).replace(".zip", ".ttf");
+            File dir = builder.contextReference.getContext().getFilesDir();
+            dir = new File(dir, "prettf");
+            if(!dir.exists()) {
+                dir.mkdirs();
+            }
+            return new File(dir, name);
+        } catch (Exception e) {
+            //builder.contextReference 可能为null
+            return null;
+        }
     }
 }

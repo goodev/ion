@@ -30,7 +30,7 @@ public class IonTypefaceCache {
     public IonTypefaceCache(Ion ion) {
         Context context = ion.getContext();
         this.ion = ion;
-        cache = new LruTypefaceCache(getHeapSize(context) / 10);
+        cache = new LruTypefaceCache(getHeapSize(context) / 7);
     }
 
     public TypefaceInfo remove(String key) {
